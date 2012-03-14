@@ -18,7 +18,7 @@ int worker_func(int x, void* y, int z) {
 typedef struct {
 	pthread_attr_t attr;
 	pthread_t thread;
-	int* result;
+	int result;
 	int x; 
 	void* y; 
 	int z;
@@ -26,17 +26,16 @@ typedef struct {
 
 static void* worker_func_child_thread(void* data) {
 	worker_func_thread_data *child_thread_data = (worker_func_thread_data*)data;
-	*child_thread_data->result = worker_func(child_thread_data->x, child_thread_data->y, child_thread_data->z);
+	child_thread_data->result = worker_func(child_thread_data->x, child_thread_data->y, child_thread_data->z);
 	return NULL;
 }
 
 /* returns NULL on success, otherwise error message string 
  * if an error happens, the pthread_attr_t member of ti gets
  * automatically cleaned up. */
-static const char* worker_func_thread_launcher(worker_func_thread_data** ti, int* result, size_t stacksize, int x, void* y, int z) {
+static const char* worker_func_thread_launcher(size_t stacksize, worker_func_thread_data** ti, int x, void* y, int z) {
 	const char* errmsg = NULL;
 	*ti = calloc(1, sizeof(worker_func_thread_data));
-	(*ti)->result = result;
 	(*ti)->x = x;
 	(*ti)->y = y;
 	(*ti)->z = z;
@@ -63,7 +62,7 @@ static const char* worker_func_thread_launcher(worker_func_thread_data** ti, int
 	goto ret;
 }
 
-static const char* worker_func_wait(worker_func_thread_data** ti, int* result) {
+static const char* worker_func_wait(int* result, worker_func_thread_data** ti) {
 	const char* errmsg = NULL;
 
 	if((errno = pthread_join((*ti)->thread, NULL))) {
@@ -74,7 +73,7 @@ static const char* worker_func_wait(worker_func_thread_data** ti, int* result) {
 	if((errno = pthread_attr_destroy(&(*ti)->attr))) {
 		errmsg = "pthread_attr_destroy";
 	}
-	*result = *(*ti)->result;
+	*result = (*ti)->result;
 	ret:
 	free(*ti);
 	*ti = NULL;
@@ -85,8 +84,8 @@ int main() {
 	worker_func_thread_data* child;
 	int result;
 	const char* errmsg;
-	if((errmsg = worker_func_thread_launcher(&child, &result, KB(128), 0, NULL, 1))) goto pt_err;
-	if((errmsg = worker_func_wait(&child, &result))) goto pt_err;
+	if((errmsg = worker_func_thread_launcher(KB(128), &child, 0, NULL, 1))) goto pt_err;
+	if((errmsg = worker_func_wait(&result, &child))) goto pt_err;
 	
 	printf("workerfunc returned %d\n", result);
 	
