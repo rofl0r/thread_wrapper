@@ -36,13 +36,14 @@ static void* worker_func_child_thread(void* data) {
 static const char* worker_func_thread_launcher(size_t stacksize, worker_func_thread_data** ti, int x, void* y, int z) {
 	const char* errmsg = NULL;
 	*ti = calloc(1, sizeof(worker_func_thread_data));
+	if(!(*ti)) goto ret;
 	(*ti)->x = x;
 	(*ti)->y = y;
 	(*ti)->z = z;
 	
 	if((errno = pthread_attr_init(&(*ti)->attr))) {
 		errmsg = "pthread_attr_init";
-		goto ret;
+		goto err;
 	}
 
 	if((errno = pthread_attr_setstacksize(&(*ti)->attr, stacksize))) {
@@ -59,6 +60,9 @@ static const char* worker_func_thread_launcher(size_t stacksize, worker_func_thr
 	
 	pt_err_attr:
 	pthread_attr_destroy(&(*ti)->attr);
+	err:
+	free(*ti);
+	(*ti) = NULL;
 	goto ret;
 }
 
