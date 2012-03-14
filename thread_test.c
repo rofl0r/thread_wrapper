@@ -53,7 +53,10 @@ static const char* worker_func_thread_launcher(size_t stacksize, void ** vti, in
 	const char* errmsg = NULL;
 	worker_func_thread_data** ti = (worker_func_thread_data**)vti;
 	*ti = calloc(1, sizeof(worker_func_thread_data));
-	if(!(*ti)) goto ret;
+	if(!(*ti)) {
+		errmsg = "OOM";
+		goto ret;
+	}
 	(*ti)->x = x;
 	(*ti)->y = y;
 	(*ti)->z = z;
@@ -122,7 +125,7 @@ static const char* function ## _thread_launcher(size_t stacksize, void ** vti, B
 	const char* errmsg = NULL; \
 	function ## _thread_data** ti = (function ## _thread_data**)vti; \
 	*ti = calloc(1, sizeof(function ## _thread_data)); \
-	if(!(*ti)) goto ret; \
+	if(!(*ti)) { errmsg = "OOM"; goto ret; } \
 	BOOST_PP_REPEAT(argcount, THREAD_WRAPPER_ASSIGN, (argcount, args)) \
 	if((errno = pthread_attr_init(&(*ti)->attr))) { \
 		errmsg = "pthread_attr_init"; \
