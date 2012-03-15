@@ -5,8 +5,12 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+
+/* thanks to mathias gaunard for BOOST_PP advice */
 #include <boost/preprocessor/array/elem.hpp>
 #include <boost/preprocessor/repetition.hpp>
+
+
 
 //RcB: LINK "-lpthread"
 
