@@ -111,7 +111,7 @@ static const char* worker_func_wait(int* result, void** vti) {
 #define THREAD_WRAPPER_EXPAND_FUNCTION_ARGS(z, n, data) child_thread_data->BOOST_PP_ARRAY_ELEM(n,data)
 #define THREAD_WRAPPER_ASSIGN(z, n, data) p->BOOST_PP_ARRAY_ELEM(n,data) = BOOST_PP_ARRAY_ELEM(n,data);
 #define THREAD_WRAPPER_EXPAND_SEMICOLON(z, n, data) BOOST_PP_ARRAY_ELEM(n,data);
-#define THREAD_WRAPPER(returntype, function, types_and_args, argcount, args) \
+#define THREAD_WRAPPER(returntype, function, argcount, types_and_args, args) \
 typedef struct { \
 	pthread_attr_t attr; \
 	pthread_t thread; \
@@ -175,7 +175,7 @@ static const char* function ## _wait(returntype * result, void** vti) { \
 	return errmsg; \
 }
 
-THREAD_WRAPPER(int, worker_func, (int x, void* y, int z, void* a), 4, (x, y, z, a));
+THREAD_WRAPPER(int, worker_func, 4, (int x, void* y, int z, void* a), (x, y, z, a));
 
 
 #define THREAD_LAUNCH(stacksize, name, function, argcount, args) \
